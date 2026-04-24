@@ -99,7 +99,7 @@ NEXUS is a comprehensive fintech platform that combines **AI-powered insights**,
 | **Uvicorn**       | Latest  | ASGI server with hot reload       |
 | **yfinance**      | Latest  | Yahoo Finance stock data          |
 | **Pandas/NumPy**  | Latest  | Data analysis & calculations      |
-| **SQLite**        | Latest  | Local database for simulator data |
+| **MongoDB**        | Latest  | Database for simulator data |
 | **feedparser**    | Latest  | RSS feed parsing for news         |
 | **pytz**          | Latest  | Timezone handling for market hours|
 
@@ -222,8 +222,6 @@ nexus/
 │   ├── screener_api.py           # Stock screener endpoints
 │   ├── share_api.py              # Portfolio sharing
 │   ├── portfolio.py              # Portfolio management
-│   ├── simulator.db              # SQLite for simulator
-│   └── portfolio.db              # SQLite for portfolios
 ├── lib/                          # Utility libraries
 │   └── authClient.js             # Auth0 client hooks
 └── public/                       # Static assets
