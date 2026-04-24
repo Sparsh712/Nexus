@@ -516,12 +516,6 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-## License
-
-This project is private and proprietary.
-
----
-
 ## Support
 
 For support and questions:
