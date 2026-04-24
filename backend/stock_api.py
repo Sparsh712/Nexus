@@ -114,6 +114,21 @@ def get_history_df(symbol: str, period="1y", interval="1d") -> pd.DataFrame:
     hist['ma50'] = hist['Close'].rolling(window=50).mean()
     return hist
 
+
+def get_fallback_quote_from_history(symbol: str) -> dict:
+    """Fallback quote from recent daily candles when quote/info endpoints are rate-limited."""
+    hist = get_yf_ticker(symbol).history(period="5d", interval="1d")
+    if hist.empty:
+        return {"price": None, "previous_close": None}
+
+    closes = hist["Close"].dropna().tolist()
+    if not closes:
+        return {"price": None, "previous_close": None}
+
+    price = float(closes[-1])
+    previous_close = float(closes[-2]) if len(closes) > 1 else None
+    return {"price": price, "previous_close": previous_close}
+
 @router.get("/search")
 async def search_stock(symbol: str = Query(..., description="e.g. TCS.NS")):
     try:
@@ -282,13 +297,26 @@ async def get_stock_profile(symbol: str):
 
 @router.get("/quote/{symbol}", response_model=StockQuote)
 async def get_stock_quote(symbol: str):
+    symbol = normalize_symbol(symbol)
     try:
         # Try to get fresh price first (bypasses cache)
         fresh = get_fresh_price(symbol)
-        info = get_yf_ticker(symbol).info
+        info = {}
+        try:
+            info = get_yf_ticker(symbol).info or {}
+        except Exception:
+            info = {}
         
         # Use fresh price if available, otherwise fall back to info
         price = fresh.get("price") if fresh else info.get("regularMarketPrice")
+
+        # Last fallback: use recent close prices from history if quote APIs are rate-limited.
+        if price is None:
+            fallback = get_fallback_quote_from_history(symbol)
+            price = fallback.get("price")
+            prev_close = fallback.get("previous_close")
+        else:
+            prev_close = fresh.get("previous_close") if fresh else info.get("regularMarketPreviousClose")
         
         return StockQuote(
             symbol=symbol,
@@ -296,25 +324,50 @@ async def get_stock_quote(symbol: str):
             open=info.get("regularMarketOpen"),
             dayHigh=info.get("dayHigh"),
             dayLow=info.get("dayLow"),
-            previousClose=fresh.get("previous_close") if fresh else info.get("regularMarketPreviousClose"),
+            previousClose=prev_close,
             currency=info.get("currency"),
             marketCap=info.get("marketCap"),
             volume=info.get("regularMarketVolume"),
         )
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Error: {e}")
+        try:
+            fallback = get_fallback_quote_from_history(symbol)
+            return StockQuote(
+                symbol=symbol,
+                price=fallback.get("price"),
+                open=None,
+                dayHigh=None,
+                dayLow=None,
+                previousClose=fallback.get("previous_close"),
+                currency="INR",
+                marketCap=None,
+                volume=None,
+            )
+        except Exception:
+            raise HTTPException(status_code=404, detail=f"Error: {e}")
 
 @router.get("/extended-quote/{symbol}")
 async def get_extended_quote(symbol: str):
     """Get extended stock quote including 52-week high/low, P/E ratio, etc."""
+    symbol = normalize_symbol(symbol)
     try:
         # Get fresh price first
         fresh = get_fresh_price(symbol)
-        info = get_yf_ticker(symbol).info
+        info = {}
+        try:
+            info = get_yf_ticker(symbol).info or {}
+        except Exception:
+            info = {}
         
         # Use fresh price if available
         price = fresh.get("price") if fresh else info.get("regularMarketPrice")
         prev_close = fresh.get("previous_close") if fresh else info.get("regularMarketPreviousClose")
+
+        # History fallback for rate-limited quote/info calls
+        if price is None:
+            fallback = get_fallback_quote_from_history(symbol)
+            price = fallback.get("price")
+            prev_close = prev_close or fallback.get("previous_close")
         
         return {
             "symbol": symbol,
@@ -347,7 +400,40 @@ async def get_extended_quote(symbol: str):
             "dayChangePercent": round(((price - prev_close) / prev_close) * 100, 2) if prev_close and price else None,
         }
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Error: {e}")
+        try:
+            fallback = get_fallback_quote_from_history(symbol)
+            return {
+                "symbol": symbol,
+                "price": fallback.get("price"),
+                "previousClose": fallback.get("previous_close"),
+                "open": None,
+                "dayHigh": None,
+                "dayLow": None,
+                "fiftyTwoWeekHigh": None,
+                "fiftyTwoWeekLow": None,
+                "fiftyDayAverage": None,
+                "twoHundredDayAverage": None,
+                "marketCap": None,
+                "volume": None,
+                "avgVolume": None,
+                "peRatio": None,
+                "forwardPE": None,
+                "eps": None,
+                "dividendYield": None,
+                "beta": None,
+                "sector": None,
+                "industry": None,
+                "longName": None,
+                "currency": "INR",
+                "percentFrom52WeekHigh": None,
+                "percentFrom52WeekLow": None,
+                "dayChange": (round(fallback.get("price") - fallback.get("previous_close"), 2)
+                              if fallback.get("price") and fallback.get("previous_close") else None),
+                "dayChangePercent": (round(((fallback.get("price") - fallback.get("previous_close")) / fallback.get("previous_close")) * 100, 2)
+                                     if fallback.get("price") and fallback.get("previous_close") else None),
+            }
+        except Exception:
+            raise HTTPException(status_code=404, detail=f"Error: {e}")
 
 
 @router.get("/history/{symbol}", response_model=List[HistoryRow])

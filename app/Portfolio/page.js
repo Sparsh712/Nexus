@@ -95,7 +95,7 @@ export default function PortfolioPage() {
               let riskResponse, navResponse;
               if (item.item_type === "stock") {
                 riskResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stock/risk-volatility/${item.symbol}`);
-                navResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stock/profile/${item.symbol}`);
+                navResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stock/quote/${item.symbol}`);
               } else if (item.item_type === "crypto") {
                 riskResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/crypto/risk-volatility/${item.symbol}`);
                 navResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/crypto/coins?search=${item.symbol}`);
@@ -109,7 +109,7 @@ export default function PortfolioPage() {
 
               let currentPrice;
               if (item.item_type === "stock") {
-                currentPrice = nav?.currentPrice;
+                currentPrice = nav?.price;
               } else if (item.item_type === "crypto") {
                 // Crypto coins search returns array, find matching coin
                 const coinData = Array.isArray(nav) ? nav.find(c => c.symbol === item.symbol) : nav;
@@ -587,9 +587,15 @@ export default function PortfolioPage() {
                     <p className="text-sm text-gray-400 mb-1">
                       {selectedItem.item_type === 'stock' ? 'Current Price' : selectedItem.item_type === 'crypto' ? 'Current Price' : 'Current NAV'}
                     </p>
-                    <p className="text-3xl font-bold text-white">
-                      {selectedItem.item_type === 'crypto' ? '$' : '₹'}{(previewData.details?.current_price || previewData.details?.price || previewData.details?.nav || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                    </p>
+                    {(() => {
+                      const shownPrice = previewData.details?.current_price ?? previewData.details?.price ?? previewData.details?.nav;
+                      const symbol = selectedItem.item_type === 'crypto' ? '$' : '₹';
+                      return (
+                        <p className="text-3xl font-bold text-white">
+                          {shownPrice == null ? '--' : `${symbol}${shownPrice.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}
+                        </p>
+                      );
+                    })()}
                     {previewData.details?.dayChangePercent !== undefined && (
                       <p className={`text-sm font-medium ${previewData.details.dayChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {previewData.details.dayChangePercent >= 0 ? '▲' : '▼'} {Math.abs(previewData.details.dayChangePercent).toFixed(2)}% today
