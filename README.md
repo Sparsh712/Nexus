@@ -99,7 +99,7 @@ NEXUS is a comprehensive fintech platform that combines **AI-powered insights**,
 | **Uvicorn**       | Latest  | ASGI server with hot reload       |
 | **yfinance**      | Latest  | Yahoo Finance stock data          |
 | **Pandas/NumPy**  | Latest  | Data analysis & calculations      |
-| **MongoDB**        | Latest  | Database for simulator data |
+| **MongoDB**        | Latest  | Database for simulator and portfolio data |
 | **feedparser**    | Latest  | RSS feed parsing for news         |
 | **pytz**          | Latest  | Timezone handling for market hours|
 
@@ -182,49 +182,54 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ```
 nexus/
-├── app/                          # Next.js App Router
-│   ├── components/               # App-specific components
-│   │   ├── Navbar.jsx           # Navigation bar
-│   │   ├── Chatbot.jsx          # AI chatbot widget
-│   │   ├── StockAIDostModal.jsx # AI analysis modal
-│   │   ├── StockAIReportModal.jsx # AI report generator
-│   │   └── EducationHub/        # Education components
-│   ├── api/                      # Next.js API routes (Auth0)
-│   │   └── auth/                # Auth0 handlers
-│   ├── dashboard/                # Stock dashboard & detail pages
-│   │   ├── page.js              # Stock listing with live prices
-│   │   └── [symbol]/page.js     # Individual stock analysis
-│   ├── crypto/                   # Crypto dashboard
-│   │   ├── page.js              # Crypto listing
-│   │   └── [symbol]/page.js     # Individual crypto analysis
-│   ├── mf/                       # Mutual funds dashboard
-│   │   ├── page.js              # MF scheme listing
-│   │   └── [schemeCode]/page.js # Individual MF analysis
-│   ├── simulator/                # Paper trading simulator
-│   ├── screener/                 # Stock screener
-│   ├── education/                # Learning hub
-│   ├── Portfolio/                # User portfolio
-│   ├── share/[shareId]/          # Shared portfolio viewer
-│   └── profile/                  # User profile
-├── components/                   # Shared components
-│   ├── MarketIndices.jsx        # Live market indices
-│   ├── MarketMovers.jsx         # Top gainers/losers
-│   ├── HeroModern.jsx           # Landing page hero
-│   └── ...
-├── backend/                      # FastAPI backend
-│   ├── main.py                   # FastAPI entry point
-│   ├── stock_api.py              # Stock data endpoints
-│   ├── crypto_api.py             # Crypto data (Binance)
-│   ├── mf_api.py                 # Mutual fund endpoints
-│   ├── video_game_api.py         # Trading simulator logic
-│   ├── market_api.py             # Market indices & movers
-│   ├── news_api.py               # Financial news RSS
-│   ├── screener_api.py           # Stock screener endpoints
-│   ├── share_api.py              # Portfolio sharing
-│   ├── portfolio.py              # Portfolio management
-├── lib/                          # Utility libraries
-│   └── authClient.js             # Auth0 client hooks
-└── public/                       # Static assets
+├── app/ # Next.js App Router
+│ ├── components/ # App-specific components
+│ │ ├── Navbar.jsx # Navigation bar
+│ │ ├── Chatbot.jsx # AI chatbot widget
+│ │ ├── StockAIDostModal.jsx # AI analysis modal
+│ │ ├── StockAIReportModal.jsx # AI report generator
+│ │ └── EducationHub/ # Education components
+│ ├── api/ # Next.js API routes
+│ │ ├── auth/[auth0]/ # Auth0 handlers
+│ │ ├── portfolio/ # Portfolio proxy routes
+│ │ ├── ai/ # AI routes
+│ │ ├── chat/ # Chat route
+│ │ └── share/ # Share routes
+│ ├── dashboard/ # Stock dashboard & detail pages
+│ │ ├── page.js # Stock listing with live prices
+│ │ └── [symbol]/page.js # Individual stock analysis
+│ ├── crypto/ # Crypto dashboard
+│ │ ├── page.js # Crypto listing
+│ │ └── [symbol]/page.js # Individual crypto analysis
+│ ├── mf/ # Mutual funds dashboard
+│ │ ├── page.js # MF scheme listing
+│ │ └── [schemeCode]/page.js # Individual MF analysis
+│ ├── simulator/ # Paper trading simulator
+│ ├── screener/ # Stock screener
+│ ├── education/ # Learning hub
+│ ├── Portfolio/ # User portfolio
+│ ├── share/[shareId]/ # Shared portfolio viewer
+│ └── profile/ # User profile
+├── components/ # Shared components
+│ ├── MarketIndices.jsx # Live market indices
+│ ├── MarketMovers.jsx # Top gainers/losers
+│ ├── HeroModern.jsx # Landing page hero
+│ └── ...
+├── backend/ # FastAPI backend
+│ ├── main.py # FastAPI entry point
+│ ├── stock_api.py # Stock data endpoints
+│ ├── crypto_api.py # Crypto data endpoints
+│ ├── mf_api.py # Mutual fund endpoints
+│ ├── video_game_api.py # Trading simulator API layer
+│ ├── simulator_mongodb.py # Simulator MongoDB storage
+│ ├── market_api.py # Market indices & movers
+│ ├── news_api.py # Financial news RSS
+│ ├── screener_api.py # Stock screener endpoints
+│ ├── share_api.py # Portfolio sharing
+│ └── portfolio_mongodb.py # Portfolio MongoDB management
+├── lib/ # Utility libraries
+│ └── authClient.js # Auth0 client hooks
+└── public/ # Static assets
 ```
 
 ---
