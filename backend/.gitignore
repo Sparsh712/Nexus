@@ -1,0 +1,74 @@
+# Backend Python .gitignore - project-specific
+
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+venv.bak/
+env.bak/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Type checkers / caches
+.mypy_cache/
+.pyre/
+
+# PyInstaller
+*.spec
+*.manifest
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local environment / secrets
+.env
+.env.*
+secrets.json
+secrets.yml
+*.pem
+*.key
+
+# Logs and databases
+*.log
+*.db
+*-journal
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Misc
+*.whl
+

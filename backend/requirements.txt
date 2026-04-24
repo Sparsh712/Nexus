@@ -1,0 +1,27 @@
+# FastAPI & Server
+fastapi
+uvicorn[standard]
+
+# HTTP Requests
+requests
+
+# Data Processing
+pandas
+numpy
+
+# Yahoo Finance
+yfinance
+
+# Database
+pymongo
+certifi
+
+# Environment Variables
+python-dotenv
+
+# Date/Time
+pytz
+python-dateutil
+
+# RSS Feed Parsing (for news)
+feedparser
