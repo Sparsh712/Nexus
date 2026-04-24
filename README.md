@@ -531,7 +531,5 @@ For support and questions:
 ---
 
 **Built with  by Team Vectôr**
-#   N E X U S 
  
- #   N e x u s  
  
