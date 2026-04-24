@@ -99,7 +99,7 @@ NEXUS is a comprehensive fintech platform that combines **AI-powered insights**,
 | **Uvicorn**       | Latest  | ASGI server with hot reload       |
 | **yfinance**      | Latest  | Yahoo Finance stock data          |
 | **Pandas/NumPy**  | Latest  | Data analysis & calculations      |
-| **MongoDB Atlas** | Latest  | Persistent storage for portfolio and simulator |
+| **MongoDB**        | Latest  | Database for simulator and portfolio data |
 | **feedparser**    | Latest  | RSS feed parsing for news         |
 | **pytz**          | Latest  | Timezone handling for market hours|
 
@@ -174,32 +174,6 @@ pip install pytz python-dateutil feedparser numpy
 uvicorn main:app --reload --port 8000
 ```
 
-### MongoDB Setup (Portfolio + Simulator Persistence)
-
-1. Create a MongoDB Atlas cluster (free tier works).
-2. Create a database user and allow your IP in Network Access (or allow `0.0.0.0/0` for quick local testing).
-3. Copy your SRV connection string from Atlas.
-4. Create `backend/.env` from `backend/.env.example` and set:
-
-```env
-MONGODB_URI=mongodb+srv://<username>:<urlencoded-password>@<cluster>.mongodb.net/?retryWrites=true&w=majority&appName=NEXUS
-```
-
-5. Restart backend:
-
-```bash
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-6. Verify it is connected:
-- Startup log should show `MongoDB connection established successfully` and `MongoDB simulator database initialized successfully`.
-- Portfolio API should respond without DB warnings:
-
-```bash
-curl http://localhost:8000/api/portfolio/test-user
-```
-
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
@@ -208,50 +182,54 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ```
 nexus/
-├── app/                          # Next.js App Router
-│   ├── components/               # App-specific components
-│   │   ├── Navbar.jsx           # Navigation bar
-│   │   ├── Chatbot.jsx          # AI chatbot widget
-│   │   ├── StockAIDostModal.jsx # AI analysis modal
-│   │   ├── StockAIReportModal.jsx # AI report generator
-│   │   └── EducationHub/        # Education components
-│   ├── api/                      # Next.js API routes (Auth0)
-│   │   └── auth/                # Auth0 handlers
-│   ├── dashboard/                # Stock dashboard & detail pages
-│   │   ├── page.js              # Stock listing with live prices
-│   │   └── [symbol]/page.js     # Individual stock analysis
-│   ├── crypto/                   # Crypto dashboard
-│   │   ├── page.js              # Crypto listing
-│   │   └── [symbol]/page.js     # Individual crypto analysis
-│   ├── mf/                       # Mutual funds dashboard
-│   │   ├── page.js              # MF scheme listing
-│   │   └── [schemeCode]/page.js # Individual MF analysis
-│   ├── simulator/                # Paper trading simulator
-│   ├── screener/                 # Stock screener
-│   ├── education/                # Learning hub
-│   ├── Portfolio/                # User portfolio
-│   ├── share/[shareId]/          # Shared portfolio viewer
-│   └── profile/                  # User profile
-├── components/                   # Shared components
-│   ├── MarketIndices.jsx        # Live market indices
-│   ├── MarketMovers.jsx         # Top gainers/losers
-│   ├── HeroModern.jsx           # Landing page hero
-│   └── ...
-├── backend/                      # FastAPI backend
-│   ├── main.py                   # FastAPI entry point
-│   ├── stock_api.py              # Stock data endpoints
-│   ├── crypto_api.py             # Crypto data (Binance)
-│   ├── mf_api.py                 # Mutual fund endpoints
-│   ├── video_game_api.py         # Trading simulator logic
-│   ├── market_api.py             # Market indices & movers
-│   ├── news_api.py               # Financial news RSS
-│   ├── screener_api.py           # Stock screener endpoints
-│   ├── share_api.py              # Portfolio sharing
-│   ├── portfolio_mongodb.py      # Portfolio management (MongoDB)
-│   └── simulator_mongodb.py      # Simulator storage layer (MongoDB)
-├── lib/                          # Utility libraries
-│   └── authClient.js             # Auth0 client hooks
-└── public/                       # Static assets
+├── app/ # Next.js App Router
+│ ├── components/ # App-specific components
+│ │ ├── Navbar.jsx # Navigation bar
+│ │ ├── Chatbot.jsx # AI chatbot widget
+│ │ ├── StockAIDostModal.jsx # AI analysis modal
+│ │ ├── StockAIReportModal.jsx # AI report generator
+│ │ └── EducationHub/ # Education components
+│ ├── api/ # Next.js API routes
+│ │ ├── auth/[auth0]/ # Auth0 handlers
+│ │ ├── portfolio/ # Portfolio proxy routes
+│ │ ├── ai/ # AI routes
+│ │ ├── chat/ # Chat route
+│ │ └── share/ # Share routes
+│ ├── dashboard/ # Stock dashboard & detail pages
+│ │ ├── page.js # Stock listing with live prices
+│ │ └── [symbol]/page.js # Individual stock analysis
+│ ├── crypto/ # Crypto dashboard
+│ │ ├── page.js # Crypto listing
+│ │ └── [symbol]/page.js # Individual crypto analysis
+│ ├── mf/ # Mutual funds dashboard
+│ │ ├── page.js # MF scheme listing
+│ │ └── [schemeCode]/page.js # Individual MF analysis
+│ ├── simulator/ # Paper trading simulator
+│ ├── screener/ # Stock screener
+│ ├── education/ # Learning hub
+│ ├── Portfolio/ # User portfolio
+│ ├── share/[shareId]/ # Shared portfolio viewer
+│ └── profile/ # User profile
+├── components/ # Shared components
+│ ├── MarketIndices.jsx # Live market indices
+│ ├── MarketMovers.jsx # Top gainers/losers
+│ ├── HeroModern.jsx # Landing page hero
+│ └── ...
+├── backend/ # FastAPI backend
+│ ├── main.py # FastAPI entry point
+│ ├── stock_api.py # Stock data endpoints
+│ ├── crypto_api.py # Crypto data endpoints
+│ ├── mf_api.py # Mutual fund endpoints
+│ ├── video_game_api.py # Trading simulator API layer
+│ ├── simulator_mongodb.py # Simulator MongoDB storage
+│ ├── market_api.py # Market indices & movers
+│ ├── news_api.py # Financial news RSS
+│ ├── screener_api.py # Stock screener endpoints
+│ ├── share_api.py # Portfolio sharing
+│ └── portfolio_mongodb.py # Portfolio MongoDB management
+├── lib/ # Utility libraries
+│ └── authClient.js # Auth0 client hooks
+└── public/ # Static assets
 ```
 
 ---
@@ -330,6 +308,49 @@ nexus/
 
 ---
 
+## 🖼️ Screenshots
+
+### Home Page
+![NEXUS Home Page](./public/home_page.png)
+*Empower Your Financial Future - Modern landing page with hero section and call-to-action*
+
+### Stock Dashboard
+![Stock Dashboard](./public/stock_dashboard.png)
+*ICICI Bank stock analysis with real-time data, NexBôt AI analysis, and comprehensive metrics*
+
+### Crypto Market
+![Crypto Market](./public/crypto_market.png)
+*Cryptocurrency market dashboard with Bitcoin, Ethereum, Solana, and other top coins*
+
+### Market Overview
+![Market Indices & Movers](./public/market_indices.png)
+*Live market indices (NIFTY 50, SENSEX, NIFTY BANK, NIFTY IT) with top gainers*
+
+### Stock Screener
+![Stock Screener](./public/stock_screener.png)
+*Advanced stock screener with filters for market cap, P/E ratio, and sector*
+
+### Mutual Funds
+![Mutual Fund Calculator](./public/mutual_fund_calculator.png)
+*Investment calculator with Performance Heatmap and Monte Carlo Prediction*
+
+### Trading Simulator
+![Trading Simulator](./public/simulator_new.png)
+*Paper trading interface with real-time trade execution and portfolio tracking*
+
+### Portfolio Management
+![Portfolio Dashboard](./public/portfolio_new.png)
+*Comprehensive portfolio view with holdings, stocks, and mutual funds*
+
+### Education Hub
+![Education Videos](./public/education_videos.png)
+*Financial education video library with curated content*
+
+![Learning Paths](./public/education_learning.png)
+*Structured learning paths - Beginner, Intermediate, and Advanced modules*
+
+---
+
 ## Architecture Overview
 
 ```mermaid
@@ -354,7 +375,7 @@ graph TB
         K --> N[mf_api.py]
         K --> O[video_game_api.py]
         K --> P[share_api.py]
-        K --> Q[portfolio_mongodb.py]
+        K --> Q[portfolio.py]
         K --> R[market_api.py]
         K --> S[news_api.py]
         K --> T[screener_api.py]
@@ -369,8 +390,8 @@ graph TB
     end
 
     subgraph Storage["Data Storage"]
-        Z[(MongoDB: nexus_simulator)]
-        AA[(MongoDB: portfolio_db)]
+        Z[(simulator.db)]
+        AA[(portfolio.db)]
     end
 
     C --> L
@@ -531,7 +552,3 @@ For support and questions:
 ---
 
 **Built with  by Team Vectôr**
-#   N E X U S 
- 
- #   N e x u s  
- 
